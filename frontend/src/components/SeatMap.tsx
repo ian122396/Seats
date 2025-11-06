@@ -1,5 +1,6 @@
 ﻿import { useMemo, useRef, useState } from 'react';
 import type { Seat, SeatStatus } from '../types';
+import { getSeatDisplayPosition } from '../lib/seatPosition';
 
 const SEAT_SIZE = 20;
 const GAP = 6;
@@ -172,8 +173,8 @@ export default function SeatMap({ seats, clientId, onSeatClick, onBoxSelect, fil
     }
 
     const statusLabel = STATUS_LABELS[seat.status] ?? seat.status;
-    const layoutLabel =
-      seat.layout_row != null && seat.layout_col != null ? `${seat.layout_row}排${seat.layout_col}列` : null;
+    const position = getSeatDisplayPosition(seat);
+    const layoutLabel = position?.text ?? null;
     const titleSegments = [seat.seat_id];
     if (layoutLabel) {
       titleSegments.push(layoutLabel);

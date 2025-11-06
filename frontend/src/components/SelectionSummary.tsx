@@ -1,4 +1,5 @@
 ﻿import type { Seat } from '../types';
+import { getSeatDisplayPosition } from '../lib/seatPosition';
 
 type SelectionSummaryProps = {
   seats: Seat[];
@@ -45,22 +46,29 @@ export default function SelectionSummary({
 
       <div className="summary-list">
         {seats.length === 0 && <span style={{ color: '#64748b' }}>尚未选择任何座位</span>}
-        {seats.map((seat) => (
-          <div key={seat.seat_id} className="summary-item">
-            <div>
-              <strong>{seat.seat_id}</strong>
-              {seat.layout_row != null && seat.layout_col != null && (
-                <div style={{ fontSize: '0.8rem', color: '#0f172a', marginTop: '0.15rem' }}>
-                  {seat.layout_row}排{seat.layout_col}列
+        {seats.map((seat) => {
+          const position = getSeatDisplayPosition(seat);
+          const positionLabel = position?.text ?? null;
+
+          return (
+            <div key={seat.seat_id} className="summary-item">
+              <div>
+                {positionLabel && (
+                  <div style={{ fontSize: '0.85rem', color: '#0f172a' }}>
+                    <strong>{positionLabel}</strong>
+                  </div>
+                )}
+                <div style={{ fontSize: '0.85rem', color: '#334155', marginTop: positionLabel ? '0.15rem' : 0 }}>
+                  {seat.seat_id}
                 </div>
-              )}
-              <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.15rem' }}>
-                {seat.tier ?? '未知票级'} · ￥{seat.price}
+                <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.15rem' }}>
+                  {seat.tier ?? '未知票级'} · ￥{seat.price}
+                </div>
               </div>
+              <span className="status-pill">HOLD</span>
             </div>
-            <span className="status-pill">HOLD</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
