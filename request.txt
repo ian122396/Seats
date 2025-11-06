@@ -1,0 +1,90 @@
+请按以下要求生成一个可在局域网运行的**“演唱会式选座系统”**（前后端同仓，开箱可跑）：
+
+技术栈
+
+后端：Python FastAPI + uvicorn，WebSocket（Starlette）用于实时广播；
+
+数据：SQLite（WAL 模式）持久化，Redis（可选）做锁（SETNX）与 TTL；
+
+前端：纯前端 Vite + React + TypeScript，用 SVG 渲染座位图；Socket.IO-client 或浏览器原生 WebSocket 接入；UI 简洁。
+
+数据初始化（从我现有的彩色 Excel 解析）
+
+读取 ./data/彩色平面图-按舞台.xlsx（openpyxl）：
+
+“所有框线”的单元格视为座位。
+
+一层区域为 C9:AN32，行 19 是横向走廊（跳过）；列 L 和 AE 为纵向走廊，中区= L+1…AE-1，侧区为两侧；
+
+二层侧区 A1:A16、AP1:AP16 固定禁售（BLOCKED）；二层中区 C1:AN4；
+
+舞台区域 I35:AH38 仅用于距离判定（越靠近越前排）。
+
+根据单元格填充色推断票档（VIP/A/B/C/E），并为每个座位生成：
+seat_id（建议“<floor>-<row>-<col>”）、floor、excel_row、excel_col、zone、tier、price、status（AVAILABLE/BLOCKED）。
+
+把解析结果落库（SQLite），并生成一个 seats.json 供前端首次渲染。
+
+后端 API
+
+GET /api/seats?floor=1：返回该楼层所有座位及状态；
+
+POST /api/hold：请求体 {seat_ids: string[], client_id: string}，逐一尝试锁座；成功的返回 held: string[] 和 expire_at（统一 TTL=120s）；
+
+POST /api/release：释放当前 client_id 的 hold；
+
+POST /api/confirm：请求体 {seat_ids: string[], client_id: string, request_id: string}，校验已 hold 且未过期，转 SOLD，request_id 做幂等；
+
+GET /api/stats：返回 available/hold/sold/blocked 统计和分档销售额；
+
+WebSocket /ws：服务端向所有连接广播 "seat_update" 事件，payload {seat_id, from, to, by, at}。
+
+并发与一致性
+
+如果启用 Redis：锁实现为 SETNX lock:seat:<id> <client_id> EX <ttl>；若失败返回冲突。
+
+如果仅 SQLite：在 holds 表（seat_id 唯一）插入带 expires_at 的记录，插入失败表示被占。后台周期任务清理过期 hold 并广播 release。
+
+confirm 时开启事务：校验 hold 未过期 -> 更新 seats.status=SOLD -> 删除 hold。
+
+所有状态变更都通过 WebSocket 立刻广播。
+
+前端（React + TS）
+
+读取 /api/seats 初始化；用 SVG 网格渲染：
+
+色板：VIP 红、A 橙、B 黄、C 绿、E 蓝；HOLD 加半透明遮罩，SOLD/BLOCKED 灰。
+
+支持点击（多选）与框选；右侧显示已选座和合计金额、倒计时（以服务器传回的 expire_at 为准）。
+
+通过 WebSocket 订阅 "seat_update"，对座位状态做乐观更新与冲突回滚（若本地以为已 hold 但广播显示已被他人抢占，则提示并撤回）。
+
+顶部提供筛选：楼层、票档、状态；提供“释放全部”“确认购买”按钮。
+
+项目结构与脚本
+
+backend/：main.py（FastAPI + WS）、models.py（SQLAlchemy）、lock.py（Redis/SQLite 锁封装）、tasks.py（清理过期 hold）、parser.py（Excel 解析）、config.py；
+
+frontend/：Vite React TS，/seats 页面；
+
+根目录 Makefile 或 npm scripts：
+
+make init：安装依赖、解析 Excel、建库导入
+
+make dev：并行启动后端（0.0.0.0:8000）与前端（0.0.0.0:5173，代理到后端）
+
+提供 .env.example 与 README，说明“如何把 Excel 放到 ./data/ 并启动”。
+
+验收
+
+局域网内两台电脑同时打开前端页面，A 锁定若干座位后，B 端应立即看到状态变为 HOLD；A 在 120 秒内确认后，B 端应立即看到 SOLD；超时未确认自动释放并广播。
+
+禁售区不可点击；被他人锁定时不可再锁。
+
+加分项（可选）
+
+简易后台页（/admin）：批量改价、手动置 SOLD/BLOCKED、导出已售清单（CSV）。
+
+WebSocket 断线重连与全量差异同步。
+
+打印用 PDF（带图例与分档统计）。

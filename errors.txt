@@ -1,0 +1,34 @@
+react-dom.development.js:29895 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+socket.ts:55  WebSocket connection to 'ws://localhost:5173/ws?client_id=68d04fcd-b84e-4731-88fb-26a4360bd8e0' failed: WebSocket is closed before the connection is established.
+(匿名) @ socket.ts:55
+safelyCallDestroy @ react-dom.development.js:22971
+commitHookEffectListUnmount @ react-dom.development.js:23139
+invokePassiveEffectUnmountInDEV @ react-dom.development.js:25246
+invokeEffectsInDev @ react-dom.development.js:27390
+commitDoubleInvokeEffectsInDEV @ react-dom.development.js:27363
+flushPassiveEffectsImpl @ react-dom.development.js:27095
+flushPassiveEffects @ react-dom.development.js:27023
+(匿名) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+:5173/api/seats?floor=1:1   Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+:5173/api/seats?floor=1:1   Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+socket.ts:20  WebSocket connection to 'ws://localhost:5173/ws?client_id=68d04fcd-b84e-4731-88fb-26a4360bd8e0' failed: 
+connect @ socket.ts:20
+subscribeSeatUpdates @ socket.ts:51
+(匿名) @ App.tsx:147
+commitHookEffectListMount @ react-dom.development.js:23189
+invokePassiveEffectMountInDEV @ react-dom.development.js:25193
+invokeEffectsInDev @ react-dom.development.js:27390
+commitDoubleInvokeEffectsInDEV @ react-dom.development.js:27369
+flushPassiveEffectsImpl @ react-dom.development.js:27095
+flushPassiveEffects @ react-dom.development.js:27023
+(匿名) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+socket.ts:20  WebSocket connection to 'ws://localhost:5173/ws?client_id=68d04fcd-b84e-4731-88fb-26a4360bd8e0' failed: 
+connect @ socket.ts:20
+socket.ts:20  WebSocket connection to 'ws://localhost:5173/ws?client_id=68d04fcd-b84e-4731-88fb-26a4360bd8e0' failed: 
+connect @ socket.ts:20

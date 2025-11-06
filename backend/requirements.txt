@@ -1,0 +1,7 @@
+﻿fastapi>=0.110.0
+uvicorn[standard]>=0.23.0
+sqlalchemy>=1.4.50,<2.1
+pydantic>=1.10,<2.0
+openpyxl>=3.1
+redis>=5.0
+python-dotenv>=1.0
